@@ -74,7 +74,7 @@ def model_config(parser):
     parser.add_argument('--self_att_norm_on', action='store_true')
     parser.add_argument('--self_att_proj_on', action='store_true')
     parser.add_argument('--self_att_residual_on', action='store_true')
-    parser.add_argument('--self_att_dropout', type=float, default=0)
+    parser.add_argument('--self_att_dropout', type=float, default=0.1)
     parser.add_argument('--self_att_drop_diagonal', action='store_false')
     parser.add_argument('--self_att_share', action='store_false')
 
@@ -102,6 +102,18 @@ def model_config(parser):
     parser.add_argument('--classifier_gamma', type=float, default=1)
     parser.add_argument('--classifier_threshold', type=float, default=0.5)
     parser.add_argument('--label_size', type=int, default=1)
+
+    ### ELMo setting
+    parser.add_argument('--elmo_on', action='store_true')
+    parser.add_argument('--elmo_config_path', default='data/elmo_2x4096_512_2048cnn_2xhighway_5.5B_options.json')
+    parser.add_argument('--elmo_weight_path', default='data/elmo_2x4096_512_2048cnn_2xhighway_5.5B_weights.hdf5')
+    parser.add_argument('--elmo_size', type=int, default=1024)
+    parser.add_argument('--elmo_lexicon_on', action='store_true')
+    parser.add_argument('--elmo_att_on', action='store_false')
+    parser.add_argument('--elmo_self_att_on', action='store_true')
+    parser.add_argument('--elmo_l2', type=float, default=0.001)
+    parser.add_argument('--elmo_dropout', type=float, default=0.5)
+
     return parser
 
 def data_config(parser):
@@ -113,7 +125,11 @@ def data_config(parser):
                         help='path to preprocessed training data file.')
     parser.add_argument('--dev_data', default='dev_data',
                         help='path to preprocessed validation data file.')
-    parser.add_argument('--dev_gold', default='data/dev-v1.1.json',
+    parser.add_argument('--dev_gold', default='dev',
+                        help='path to preprocessed validation data file.')
+    parser.add_argument('--test_data', default='test_data',
+                        help='path to preprocessed test data file.')
+    parser.add_argument('--test_gold', default='test',
                         help='path to preprocessed validation data file.')
     parser.add_argument('--covec_path', default='data/MT-LSTM.pt')
     parser.add_argument('--glove', default='data/glove.840B.300d.txt',
@@ -126,7 +142,7 @@ def data_config(parser):
     return parser
 
 def train_config(parser):
-    parser.add_argument('--cuda', type=bool, default=torch.cuda.is_available(), 
+    parser.add_argument('--cuda', type=bool, default=torch.cuda.is_available(),
                         help='Use GPU acceleration.')
     parser.add_argument('--log_per_updates', type=int, default=100)
     parser.add_argument('--epoches', type=int, default=50)
