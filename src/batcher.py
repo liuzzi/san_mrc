@@ -19,18 +19,32 @@ def load_meta(opt, meta_path):
     opt['vocab_size'] = len(meta['vocab'])
     return embedding, opt
 
+def load_meta_with_vocab(opt, meta_path):
+    with open(meta_path, 'rb') as f:
+        meta = pkl.load(f)
+    embedding = torch.Tensor(meta['embedding'])
+    opt['pos_vocab_size'] = len(meta['vocab_tag'])
+    opt['ner_vocab_size'] = len(meta['vocab_ner'])
+    opt['vocab_size'] = len(meta['vocab'])
+    return embedding, opt, meta['vocab']
+
 class BatchGen:
     def __init__(self, data_path, batch_size, gpu, is_train=True, doc_maxlen=1000, dropout_w=0.05, dw_type=0,
-                 with_label=False):
+                 with_label=False,data_json=None):
         self.batch_size = batch_size
         self.doc_maxlen = doc_maxlen
         self.is_train = is_train
         self.gpu = gpu
-        self.data_path = data_path
+
+
+        if data_path is None:
+            self.data = data_json
+        else:
+            self.data_path = data_path
+            self.data = self.load(self.data_path, is_train, doc_maxlen)
+
         self.dropout_w = dropout_w
         self.dw_type = dw_type
-
-        self.data = self.load(self.data_path, is_train, doc_maxlen)
 
         if is_train:
             indices = list(range(len(self.data)))
@@ -41,6 +55,7 @@ class BatchGen:
         self.data = data
         self.offset = 0
         self.with_label = with_label
+
 
     def load(self, path, is_train=True, doc_maxlen=1000):
         with open(path, 'r', encoding='utf-8') as reader:
@@ -140,7 +155,10 @@ class BatchGen:
                     batch_dict[k] = v.pin_memory()
             if not self.is_train:
                 batch_dict['text'] = [sample['context'] for sample in batch]
-                batch_dict['span'] = [sample['span'] for sample in batch]
+                try:
+                    batch_dict['span'] = [sample['span'] for sample in batch]
+                except:
+                    pass
             batch_dict['uids'] = [sample['uid'] for sample in batch]
             self.offset += 1
 

@@ -130,6 +130,40 @@ def feature_func(sample, query_tokend, doc_tokend, vocab, vocab_tag, vocab_ner, 
     fea_dict['end'] = end
     return fea_dict
 
+
+
+def feature_func_eval(sample, query_tokend, doc_tokend, vocab, vocab_tag, vocab_ner, is_train, v2_on=False):
+    # features
+    fea_dict = {}
+    fea_dict['uid'] = sample['uid']
+    if v2_on and is_train:
+        fea_dict['label'] = sample['label']
+    fea_dict['query_tok'] = tok_func(query_tokend, vocab)
+    fea_dict['query_pos'] = postag_func(query_tokend, vocab_tag)
+    fea_dict['query_ner'] = nertag_func(query_tokend, vocab_ner)
+    fea_dict['doc_tok'] = tok_func(doc_tokend, vocab)
+    fea_dict['doc_pos'] = postag_func(doc_tokend, vocab_tag)
+    fea_dict['doc_ner'] = nertag_func(doc_tokend, vocab_ner)
+    fea_dict['doc_fea'] = '{}'.format(match_func(query_tokend, doc_tokend))
+    fea_dict['query_fea'] = '{}'.format(match_func(doc_tokend, query_tokend))
+    doc_toks = [t.text for t in doc_tokend if len(t.text) > 0]
+    query_toks = [t.text for t in query_tokend if len(t.text) > 0]
+    # answer_start = sample['answer_start']
+    # answer_end = sample['answer_end']
+    # answer = sample['answer']
+    fea_dict['doc_ctok'] = doc_toks
+    fea_dict['query_ctok'] = query_toks
+
+    # start, end, span = build_span(sample['context'], answer, doc_toks, answer_start,
+    #                                 answer_end, is_train=is_train)
+    # if is_train and (start == -1 or end == -1): return None
+    if not is_train:
+        fea_dict['context'] = sample['context']
+        # fea_dict['span'] = span
+    # fea_dict['start'] = start
+    # fea_dict['end'] = end
+    return fea_dict
+
 def build_data(data, vocab, vocab_tag, vocab_ner, fout, is_train, thread=16, NLP=None, v2_on=False):
     passages = [reform_text(sample['context']) for sample in data]
     passage_tokened = [doc for doc in NLP.pipe(passages, batch_size=1000, n_threads=thread)]

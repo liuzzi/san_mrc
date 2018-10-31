@@ -153,6 +153,29 @@ class DocReaderModel(object):
         return (predictions, best_scores, label_predictions)
 
 
+
+    def predict_eval(self, batch, top_k=1):
+        self.network.eval()
+        self.network.drop_emb = False
+        # Transfer trained embedding to evaluation embedding
+        if self.eval_embed_transfer:
+            self.update_eval_embed()
+            self.eval_embed_transfer = False
+        start, end, lab = self.network(batch)
+
+        start = F.softmax(start, 1)
+        end = F.softmax(end, 1)
+        start = start.data.cpu()
+        end = end.data.cpu()
+        if lab is not None:
+            lab = lab.data.cpu()
+
+        # print(start,end,lab)
+
+
+        return start,end,lab
+
+
     def setup_eval_embed(self, eval_embed, padding_idx = 0):
         self.network.lexicon_encoder.eval_embed = nn.Embedding(eval_embed.size(0),
                                                eval_embed.size(1),
@@ -191,8 +214,23 @@ class DocReaderModel(object):
         torch.save(params, filename)
         logger.info('model saved to {}'.format(filename))
 
+    #loads a model from a filepath, and returns it.
+    @staticmethod
+    def load(model_filepath, embedding, gpu):
+        if not gpu:
+            logger.info('no gpu, loading model onto CPU')
+            loaded = torch.load(model_filepath, map_location=lambda storage, loc: storage)
+        else:
+            loaded = torch.load(model_filepath)
+
+
+        return DocReaderModel(loaded['config'], embedding, state_dict=loaded['state_dict'])
+
     def cuda(self):
         self.network.cuda()
+
+    def cpu(self):
+        self.network.cpu()
 
     def position_encoding(self, m, threshold=5):
         encoding = np.ones((m, m), dtype=np.float32)

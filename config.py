@@ -27,7 +27,7 @@ def model_config(parser):
     parser.add_argument('--prealign_norm_on', action='store_true')
     parser.add_argument('--prealign_proj_on', action='store_true')
     parser.add_argument('--prealign_bidi', action='store_true')
-    parser.add_argument('--prealign_hidden_size', type=int, default=128)
+    parser.add_argument('--prealign_hidden_size', type=int, default=256)
     parser.add_argument('--prealign_share', action='store_false')
     parser.add_argument('--prealign_residual_on', action='store_true')
     parser.add_argument('--prealign_scale_on', action='store_false')
@@ -38,7 +38,7 @@ def model_config(parser):
     parser.add_argument('--pwnn_hidden_size', type=int, default=256, help='support short con')
 
     ##contextual encoding
-    parser.add_argument('--contextual_hidden_size', type=int, default=128)
+    parser.add_argument('--contextual_hidden_size', type=int, default=256)
     parser.add_argument('--contextual_cell_type', type=str, default='lstm')
     parser.add_argument('--contextual_weight_norm_on', action='store_true')
     parser.add_argument('--contextual_maxout_on', action='store_true')
@@ -47,7 +47,7 @@ def model_config(parser):
     parser.add_argument('--contextual_num_layers', type=int, default=2)
 
     ## mem setting
-    parser.add_argument('--msum_hidden_size', type=int, default=128)
+    parser.add_argument('--msum_hidden_size', type=int, default=256)
     parser.add_argument('--msum_cell_type', type=str, default='lstm')
     parser.add_argument('--msum_weight_norm_on', action='store_true')
     parser.add_argument('--msum_maxout_on', action='store_true')
@@ -57,7 +57,7 @@ def model_config(parser):
 
     # attention
     parser.add_argument('--deep_att_lexicon_input_on', action='store_false')
-    parser.add_argument('--deep_att_hidden_size', type=int, default=128)
+    parser.add_argument('--deep_att_hidden_size', type=int, default=256)
     parser.add_argument('--deep_att_sim_func', type=str, default='dotproductproject')
     parser.add_argument('--deep_att_activation', type=str, default='relu')
     parser.add_argument('--deep_att_norm_on', action='store_false')
@@ -68,7 +68,7 @@ def model_config(parser):
 
     # self attn
     parser.add_argument('--self_attention_on', action='store_false')
-    parser.add_argument('--self_att_hidden_size', type=int, default=128)
+    parser.add_argument('--self_att_hidden_size', type=int, default=256)
     parser.add_argument('--self_att_sim_func', type=str, default='dotproductproject')
     parser.add_argument('--self_att_activation', type=str, default='relu')
     parser.add_argument('--self_att_norm_on', action='store_true')
@@ -84,11 +84,11 @@ def model_config(parser):
     parser.add_argument('--query_sum_norm_on', action='store_true')
 
     parser.add_argument('--max_len', type=int, default=5)
-    parser.add_argument('--decoder_num_turn', type=int, default=5)
+    parser.add_argument('--decoder_num_turn', type=int, default=10)
     parser.add_argument('--decoder_mem_type', type=int, default=1)
     parser.add_argument('--decoder_mem_drop_p', type=float, default=0.1)
     parser.add_argument('--decoder_opt', type=int, default=0)
-    parser.add_argument('--decoder_att_hidden_size', type=int, default=128)
+    parser.add_argument('--decoder_att_hidden_size', type=int, default=256)
     parser.add_argument('--decoder_att_type', type=str, default='bilinear',
                         help='bilinear/simple/defualt')
     parser.add_argument('--decoder_rnn_type', type=str, default='gru',
@@ -130,14 +130,14 @@ def train_config(parser):
                         help='Use GPU acceleration.')
     parser.add_argument('--log_per_updates', type=int, default=100)
     parser.add_argument('--epoches', type=int, default=50)
-    parser.add_argument('--batch_size', type=int, default=32)
+    parser.add_argument('--batch_size', type=int, default=15)
     parser.add_argument('--optimizer', default='adamax')
     parser.add_argument('--grad_clipping', type=float, default=5)
     parser.add_argument('--weight_decay', type=float, default=0)
     parser.add_argument('--learning_rate', type=float, default=0.002)
     parser.add_argument('--momentum', type=float, default=0)
     parser.add_argument('--vb_dropout', action='store_false')
-    parser.add_argument('--dropout_p', type=float, default=0.35)
+    parser.add_argument('--dropout_p', type=float, default=0.1)
     parser.add_argument('--dropout_emb', type=float, default=0.4)
     parser.add_argument('--dropout_cov', type=float, default=0.4)
     parser.add_argument('--dropout_w', type=float, default=0.05)
@@ -150,6 +150,7 @@ def train_config(parser):
     parser.add_argument('--tune_partial', type=int, default=1000, help='finetune top-x embeddings (including <PAD>, <UNK>).')
     parser.add_argument('--model_dir', default='checkpoint')
     parser.add_argument('--seed', type=int, default=2018)
+    parser.add_argument('--resume', type=str, default='')
 
     return parser
 
