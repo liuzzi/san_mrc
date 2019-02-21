@@ -30,12 +30,12 @@ DEBUG_SIZE = 2000
 
 NLP = spacy.load('en', disable=['vectors', 'textcat', 'parser'])
 
-def load_data(path, is_train=True, v2_on=False):
+def load_data(path, is_train=True, v2_on=False, limit=None):
     rows = []
     with open(path, encoding="utf8") as f:
         data = json.load(f)['data']
     for article in tqdm.tqdm(data, total=len(data)):
-        for paragraph in article['paragraphs']:
+        for paragraph in article['paragraphs'][0:limit]:
             context = paragraph['context']
             if v2_on:
                 context = '{} {}'.format(context, END)
@@ -48,9 +48,13 @@ def load_data(path, is_train=True, v2_on=False):
                 if is_train:
                     if (v2_on and label < 1 and len(answers) < 1) or ((not v2_on) and len(answers) < 1): continue
                     if len(answers) > 0:
-                        answer = answers[0]['text']
+                        try:
+                            answer = answers[0]['text']
+                        except:
+                            print(qa)
                         answer_start = answers[0]['answer_start']
                         answer_end = answer_start + len(answer)
+
                         if v2_on:
                             sample = {'uid': uid, 'context': context, 'question': question, 'answer': answer, 'answer_start': answer_start, 'answer_end':answer_end, 'label': label}
                         else:
@@ -63,6 +67,11 @@ def load_data(path, is_train=True, v2_on=False):
                 else:
                     sample = {'uid': uid, 'context': context, 'question': question, 'answer': answers, 'answer_start': -1, 'answer_end':-1}
                 rows.append(sample)
+
+                if limit is not None:
+                    if len(rows) > limit:
+                        return rows
+
                 if DEBUG_ON and (not is_train) and len(rows) == DEBUG_SIZE:
                     return rows
     return rows
@@ -76,8 +85,12 @@ def main():
     version = 'v1'
     if v2_on:
         msg = '~Processing SQuAD v2.0 dataset~'
-        train_path = 'train-v2.0.json'
-        dev_path = 'dev-v2.0.json'
+        # train_path = 'train-v2.0.json'
+        # dev_path = 'dev-v2.0.json'
+
+        train_path = 'msmarco_squad_train.json'
+        dev_path = 'msmarco_squad_dev.json'
+
         version = 'v2'
     else:
         msg = '~Processing SQuAD dataset~'
@@ -89,6 +102,8 @@ def main():
         logger.error('***DEBUGING MODE***')
     train_path = os.path.join(args.data_dir, train_path)
     valid_path = os.path.join(args.data_dir, dev_path)
+
+    logger.info('Train path is: {}'.format(train_path))
 
     logger.info('The path of training data: {}'.format(train_path))
     logger.info('The path of validation data: {}'.format(valid_path))
@@ -102,8 +117,8 @@ def main():
     else:
         logger.info('Loading glove vocab.')
     # load data
-    train_data = load_data(train_path, v2_on=v2_on)
-    dev_data = load_data(valid_path, False, v2_on=v2_on)
+    train_data = load_data(train_path, v2_on=v2_on, limit=20000)
+    dev_data = load_data(valid_path, False, v2_on=v2_on, limit=500)
 
     wemb_vocab = load_emb_vocab(emb_path, embedding_dim, fast_vec_format=args.fasttext_on)
     logger.info('Build vocabulary')
@@ -125,6 +140,10 @@ def main():
     meta = {'vocab': vocab, 'vocab_tag': vocab_tag, 'vocab_ner': vocab_ner, 'embedding': embedding}
     with open(meta_path, 'wb') as f:
         pickle.dump(meta, f)
+
+    del meta
+    del embedding
+    logger.info('deleted meta and embedding')
 
     logger.info('building training data')
     train_fout = gen_name(args.data_dir, args.train_data, version)

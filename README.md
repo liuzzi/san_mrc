@@ -1,3 +1,7 @@
+This fork contains some bugfixes + support for resuming and fine tuning models
+
+
+
 # Stochastic Answer Networks for Machine Reading Comprehension
 
 This PyTorch package implements the Stochastic Answer Network (SAN) for Machine Reading Comprehension, as described in:

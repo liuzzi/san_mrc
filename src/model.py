@@ -220,9 +220,17 @@ class DocReaderModel(object):
         if not gpu:
             logger.info('no gpu, loading model onto CPU')
             loaded = torch.load(model_filepath, map_location=lambda storage, loc: storage)
+            loaded['config']['cuda'] = False
         else:
             loaded = torch.load(model_filepath)
 
+
+        # This is to handle models made before the elmo additions
+        if 'elmo_on' not in loaded['config']:
+            loaded['config']['elmo_on'] = False
+            loaded['config']['elmo_att_on'] = False
+            loaded['config']['elmo_size'] = 1024
+            loaded['config']['elmo_self_att_on'] = True
 
         return DocReaderModel(loaded['config'], embedding, state_dict=loaded['state_dict'])
 

@@ -24,7 +24,7 @@ def gen_name(dir, path, version, suffix='json'):
 def gen_gold_name(dir, path, version, suffix='json'):
     fname = '{}-{}.{}'.format(path, version, suffix)
     return os.path.join(dir, fname)
-
+    
 def predict_squad(model, data, v2_on=False):
     data.reset()
     span_predictions = {}
@@ -168,7 +168,7 @@ def feature_func_eval(sample, query_tokend, doc_tokend, vocab, vocab_tag, vocab_
     # fea_dict['end'] = end
     return fea_dict
 
-def build_data(data, vocab, vocab_tag, vocab_ner, fout, is_train, thread=16, NLP=None, v2_on=False):
+def build_data(data, vocab, vocab_tag, vocab_ner, fout, is_train, thread=8, NLP=None, v2_on=False):
     passages = [reform_text(sample['context']) for sample in data]
     passage_tokened = [doc for doc in NLP.pipe(passages, batch_size=1000, n_threads=thread)]
     logger.info('Done with document tokenize')

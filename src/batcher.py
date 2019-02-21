@@ -72,7 +72,7 @@ class BatchGen:
                 if is_train and (len(sample['doc_tok']) > doc_maxlen or \
                                  sample['start'] is None or sample['end'] is None):
                     #import pdb; pdb.set_trace()
-                    print(sample['uid'])
+                    # print(sample['uid'])
                     continue
                 data.append(sample)
             print('Loaded {} samples out of {}'.format(len(data), cnt))

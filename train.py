@@ -42,25 +42,40 @@ def main():
 	opt = vars(args)
 	logger.info('Loading Squad')
 	version = 'v1'
+	gold_version = 'v1.1'
+
+
+
+
 	if args.v2_on:
 		version = 'v2'
+		gold_version = 'v2.0'
 		dev_labels = load_squad_v2_label(args.dev_gold)
 
 	logger.info('Loading Meta')
 	embedding, opt = load_meta(opt, gen_name(args.data_dir, args.meta, version, suffix='pick'))
 	
 	logger.info('Loading Train Batcher')
-    train_data = BatchGen(gen_name(args.data_dir, args.train_data, version),
-                      batch_size=args.batch_size,
-                      gpu=args.cuda,
-                      with_label=args.v2_on,
-                      elmo_on=args.elmo_on)
+
+	if args.elmo_on:
+		logger.info('ELMO ON')
 
 
-    logger.info('Loading Dev Batcher')
+
+	dev_path = gen_name(args.data_dir, args.dev_data, version)
+	dev_gold_path = gen_gold_name(args.data_dir, args.dev_gold, gold_version)
+
+	train_data = BatchGen(gen_name(args.data_dir, args.train_data, version),
+					  batch_size=args.batch_size,
+					  gpu=args.cuda,
+					  with_label=args.v2_on,
+					  elmo_on=args.elmo_on)
+
+
+	logger.info('Loading Dev Batcher')
 	dev_data = BatchGen(dev_path,
-                      batch_size=args.batch_size,
-                      gpu=args.cuda, is_train=False, elmo_on=args.elmo_on)
+					  batch_size=args.batch_size,
+					  gpu=args.cuda, is_train=False, elmo_on=args.elmo_on)
 
 
 	logger.info('Loading Golden Standards')
@@ -148,11 +163,6 @@ def main():
 		if metric is not None:
 			logger.warning("Detailed Metric at Epoch {0}: {1}".format(epoch, metric))
 
-
-        if (test_data is not None) and (test_gold is not None):
-            logger.warning("Epoch {0} - test EM: {1:.3f} F1: {2:.3f}".format(epoch, test_em, test_f1))
-            if args.v2_on:
-                logger.warning("Epoch {0} - test ACC: {1:.4f}".format(epoch, test_acc))
 
 if __name__ == '__main__':
 	main()
